@@ -261,8 +261,7 @@ function subscribeNip46(sessionId, session, nonce) {
 
         // Decrypt the NIP-46 message (NIP-04 encrypted)
         const { decrypt } = require('nostr-tools/nip04');
-        const skBytes = Buffer.from(session.tempSecretKey, 'hex');
-        const content = decrypt(skBytes, event.pubkey, event.content);
+        const content = await decrypt(session.tempSecretKey, event.pubkey, event.content);
         const nip46msg = JSON.parse(content);
 
         if (nip46msg.method === 'connect') {
@@ -287,21 +286,21 @@ function subscribeNip46(sessionId, session, nonce) {
           const requestId = crypto.randomBytes(8).toString('hex');
           const { encrypt } = require('nostr-tools/nip04');
           const { finalizeEvent } = require('nostr-tools/pure');
-          const skBytes = Buffer.from(session.tempSecretKey, 'hex');
           const requestMsg = JSON.stringify({
             id: requestId,
             method: 'sign_event',
             params: [JSON.stringify(challengeEvent)]
           });
 
-          const encrypted = encrypt(skBytes, event.pubkey, requestMsg);
+          const encrypted = await encrypt(session.tempSecretKey, event.pubkey, requestMsg);
 
+          const skUint8 = Uint8Array.from(Buffer.from(session.tempSecretKey, 'hex'));
           const responseEvent = finalizeEvent({
             kind: 24133,
             created_at: Math.floor(Date.now() / 1000),
             tags: [['p', event.pubkey]],
             content: encrypted
-          }, skBytes);
+          }, skUint8);
 
           ws.send(JSON.stringify(['EVENT', responseEvent]));
 
