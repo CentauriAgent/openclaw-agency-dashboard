@@ -298,7 +298,7 @@ setInterval(async () => {
 }, 5000);
 
 // --- Start ---
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n⭐ OpenClaw Agency Dashboard running at http://localhost:${PORT}`);
   console.log(`🔑 Auth: NIP-07 (extension) · NIP-46 (Nostr Connect) · nsec (direct key)`);
   console.log(`👥 Team config: agency-team.json`);
