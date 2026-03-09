@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { WebSocketServer } = require('ws');
-const { handleChallenge, handleVerify, handleLogout, handleMe, requireAuth, requireRole } = require('./auth');
+const { handleChallenge, handleVerify, handleLogout, handleMe, handleNostrConnectInit, handleNostrConnectPoll, requireAuth, requireRole } = require('./auth');
 const { getTeam, addMember, removeMember, updateMember } = require('./team');
 const { getProfile } = require('./profiles');
 const mock = require('./mock-data');
@@ -126,6 +126,12 @@ async function routeAPI(req, res, pathname, params) {
   }
   if (method === 'POST' && pathname === '/api/auth/verify') {
     return handleVerify(params, req, res);
+  }
+  if (method === 'POST' && pathname === '/api/auth/nostr-connect/init') {
+    return handleNostrConnectInit(params, req, res);
+  }
+  if (method === 'POST' && pathname === '/api/auth/nostr-connect/poll') {
+    return handleNostrConnectPoll(params, req, res);
   }
   if (method === 'GET' && pathname === '/api/health') {
     return { status: 'ok', beads: beadsAvailable, timestamp: new Date().toISOString() };
@@ -294,7 +300,7 @@ setInterval(async () => {
 // --- Start ---
 server.listen(PORT, () => {
   console.log(`\n⭐ OpenClaw Agency Dashboard running at http://localhost:${PORT}`);
-  console.log(`🔑 Auth: NIP-07 (browser extension)`);
+  console.log(`🔑 Auth: NIP-07 (extension) · NIP-46 (Nostr Connect) · nsec (direct key)`);
   console.log(`👥 Team config: agency-team.json`);
   console.log(`📦 Data source: ${beadsAvailable ? 'Beads (live)' : 'Mock data (demo)'}`);
   console.log('');

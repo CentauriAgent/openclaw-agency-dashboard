@@ -2,7 +2,7 @@
 
 import { api } from '../api.js';
 import { store } from '../state.js';
-import { logout } from '../auth.js';
+import { logout, clearStoredNsec, getStoredNsec } from '../auth.js';
 
 export function renderSettings(container) {
   const user = store.get('user');
@@ -48,6 +48,13 @@ export function renderSettings(container) {
         <div><strong>Logged in as:</strong> ${user.profile?.name || user.profile?.display_name || user.npub}</div>
         <div><strong>NPub:</strong> <span class="mono">${user.npub}</span></div>
         <div><strong>Role:</strong> ${getRoleBadgeHTML(user.role)}</div>
+        <div><strong>Auth method:</strong> ${user.authMethod === 'nsec' ? '🔐 nsec (direct key)' : user.authMethod === 'nip46' ? '📱 Nostr Connect' : '🔑 Extension (NIP-07)'}</div>
+        ${getStoredNsec() ? `
+        <div style="margin-top: var(--space-sm);">
+          <button class="btn btn-ghost btn-sm" id="btn-clear-nsec">🗑️ Clear Stored Key</button>
+          <span style="font-size: 12px; color: var(--text-muted); margin-left: var(--space-xs);">nsec is in sessionStorage</span>
+        </div>
+        ` : ''}
         <div style="margin-top: var(--space-md);">
           <button class="btn btn-danger btn-sm" id="btn-settings-logout">🔓 Logout</button>
         </div>
@@ -58,6 +65,10 @@ export function renderSettings(container) {
   // Event handlers
   container.querySelector('#btn-add-member')?.addEventListener('click', handleAddMember);
   container.querySelector('#btn-settings-logout')?.addEventListener('click', handleLogout);
+  container.querySelector('#btn-clear-nsec')?.addEventListener('click', () => {
+    clearStoredNsec();
+    renderSettings(container); // Re-render to hide the button
+  });
 
   // Remove and role change handlers
   container.querySelectorAll('.btn-remove-member').forEach(btn => {

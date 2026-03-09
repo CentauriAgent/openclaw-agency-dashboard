@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="/css/cards.css">
   <link rel="stylesheet" href="/css/views.css">
   <link rel="stylesheet" href="/css/auth.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/nostr-tools@2.10.4/lib/nostr.bundle.js"></script>
 </head>
 <body>
   <!-- Login Page -->
@@ -21,21 +23,55 @@
       <h1 class="login-title">OpenClaw Agency</h1>
       <div class="login-card">
         <p class="login-desc">Sign in with your Nostr identity to access the agency dashboard.</p>
+
+        <!-- NIP-07: Extension -->
         <button id="btn-nip07" class="btn btn-primary btn-login">
           🔑 Login with Extension <span class="btn-sub">(NIP-07)</span>
         </button>
-        <button id="btn-nip46" class="btn btn-secondary btn-login" disabled>
-          📱 Remote Signer <span class="btn-sub">(NIP-46 — coming soon)</span>
+
+        <!-- NIP-46: Nostr Connect -->
+        <button id="btn-nip46" class="btn btn-secondary btn-login">
+          📱 Login with Nostr Connect <span class="btn-sub">(NIP-46 · Amber, nsec.app)</span>
         </button>
+
+        <!-- NIP-46 expanded section (hidden by default) -->
+        <div id="nip46-section" class="nip46-section" style="display:none">
+          <div id="nip46-qr" class="nip46-qr"></div>
+          <div class="nip46-uri-row">
+            <input type="text" id="nip46-uri" class="nip46-uri-input" readonly placeholder="nostrconnect://..." />
+            <button id="btn-copy-uri" class="btn btn-ghost btn-sm">📋 Copy</button>
+          </div>
+          <div id="nip46-status" class="nip46-status">Waiting for connection...</div>
+          <button id="btn-nip46-cancel" class="btn btn-ghost btn-sm nip46-cancel">Cancel</button>
+        </div>
+
+        <!-- nsec: Direct Key -->
+        <button id="btn-nsec" class="btn btn-secondary btn-login">
+          🔐 Login with nsec <span class="btn-sub">(direct key entry)</span>
+        </button>
+
+        <!-- nsec expanded section (hidden by default) -->
+        <div id="nsec-section" class="nsec-section" style="display:none">
+          <div class="nsec-warning">
+            ⚠️ Your key stays in your browser and is never sent to the server.
+          </div>
+          <input type="password" id="nsec-input" class="nsec-input" placeholder="nsec1... or hex secret key" autocomplete="off" spellcheck="false" />
+          <div class="nsec-actions">
+            <button id="btn-nsec-submit" class="btn btn-primary btn-sm">Sign In</button>
+            <button id="btn-nsec-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+          </div>
+        </div>
+
         <div class="login-divider"><span>or</span></div>
         <p class="login-help">Don't have a Nostr identity? <a href="https://nostr.com" target="_blank">Get one at nostr.com →</a></p>
+
         <div id="login-error" class="login-error" style="display:none"></div>
         <div id="login-loading" class="login-loading" style="display:none">
           <div class="spinner"></div>
-          <span>Signing in...</span>
+          <span id="login-loading-text">Signing in...</span>
         </div>
       </div>
-      <p class="login-footer">Powered by Nostr · NIP-07</p>
+      <p class="login-footer">Powered by Nostr · NIP-07 · NIP-46</p>
     </div>
   </div>
 
