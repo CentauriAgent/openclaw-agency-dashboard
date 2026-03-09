@@ -53,11 +53,25 @@
 }
 
 .connection-status.connected .status-dot { background: var(--status-active); }
+.connection-status.partial .status-dot { background: #f59e0b; }
 .connection-status.error .status-dot { background: var(--status-blocked); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 
 .last-update {
   font-size: 11px;
   color: var(--text-muted);
+}
+
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-lg);
+  max-width: 500px;
 }
 
 .topbar-right {

@@ -1,5 +1,6 @@
 node_modules/
 agency-team.json
 .session-secret
+.profile-cache.json
 *.log
 .DS_Store

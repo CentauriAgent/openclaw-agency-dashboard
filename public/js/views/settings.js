@@ -1,8 +1,18 @@
-// Settings view (owner/admin only)
+// Settings view — team management, audit log, division access
 
 import { api } from '../api.js';
 import { store } from '../state.js';
 import { logout, clearStoredNsec, getStoredNsec } from '../auth.js';
+
+const DIVISIONS = [
+  { id: 'engineering', name: 'Engineering', emoji: '🏗️' },
+  { id: 'design', name: 'Design', emoji: '🎨' },
+  { id: 'marketing', name: 'Marketing', emoji: '📣' },
+  { id: 'product', name: 'Product', emoji: '📦' },
+  { id: 'project-management', name: 'PM', emoji: '🎬' },
+  { id: 'testing', name: 'Testing', emoji: '🧪' },
+  { id: 'operations', name: 'Operations', emoji: '🛟' }
+];
 
 export function renderSettings(container) {
   const user = store.get('user');
@@ -48,7 +58,7 @@ export function renderSettings(container) {
         <div><strong>Logged in as:</strong> ${user.profile?.name || user.profile?.display_name || user.npub}</div>
         <div><strong>NPub:</strong> <span class="mono">${user.npub}</span></div>
         <div><strong>Role:</strong> ${getRoleBadgeHTML(user.role)}</div>
-        <div><strong>Auth method:</strong> ${user.authMethod === 'nsec' ? '🔐 nsec (direct key)' : user.authMethod === 'nip46' ? '📱 Nostr Connect' : '🔑 Extension (NIP-07)'}</div>
+        <div><strong>Auth method:</strong> ${user.authMethod === 'nsec' ? '🔐 nsec' : user.authMethod === 'nip46' ? '📱 Nostr Connect' : '🔑 Extension'}</div>
         ${getStoredNsec() ? `
         <div style="margin-top: var(--space-sm);">
           <button class="btn btn-ghost btn-sm" id="btn-clear-nsec">🗑️ Clear Stored Key</button>
@@ -60,6 +70,15 @@ export function renderSettings(container) {
         </div>
       </div>
     </div>
+
+    ${isOwner ? `
+    <div class="settings-section">
+      <h3 class="settings-section-title">📋 Audit Log</h3>
+      <div id="audit-log-container">
+        <button class="btn btn-secondary btn-sm" id="btn-load-audit">Load Audit Log</button>
+      </div>
+    </div>
+    ` : ''}
   `;
 
   // Event handlers
@@ -67,8 +86,10 @@ export function renderSettings(container) {
   container.querySelector('#btn-settings-logout')?.addEventListener('click', handleLogout);
   container.querySelector('#btn-clear-nsec')?.addEventListener('click', () => {
     clearStoredNsec();
-    renderSettings(container); // Re-render to hide the button
+    renderSettings(container);
   });
+
+  container.querySelector('#btn-load-audit')?.addEventListener('click', loadAuditLog);
 
   // Remove and role change handlers
   container.querySelectorAll('.btn-remove-member').forEach(btn => {
@@ -169,6 +190,38 @@ async function refreshTeam() {
     const container = document.getElementById('view-settings');
     renderSettings(container);
   } catch {}
+}
+
+async function loadAuditLog() {
+  const container = document.getElementById('audit-log-container');
+  if (!container) return;
+
+  container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">Loading...</div>';
+
+  try {
+    const result = await api.get('/api/audit?limit=50');
+    const entries = result.entries || [];
+
+    if (entries.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">No audit entries yet.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+        ${entries.map(e => `
+          <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; display: flex; gap: var(--space-md);">
+            <span class="mono" style="color: var(--text-muted); flex-shrink: 0; width: 130px;">${new Date(e.timestamp).toLocaleString()}</span>
+            <span style="width: 50px; color: ${e.category === 'auth' ? 'var(--accent-bright)' : 'var(--status-deferred)'}; font-weight: 500;">${e.category}</span>
+            <span style="flex: 1; color: var(--text-primary);">${e.action}</span>
+            <span style="color: var(--text-muted);">${e.npub ? e.npub.slice(0, 16) + '...' : e.by ? e.by.slice(0, 16) + '...' : ''}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color: var(--status-blocked); font-size: 13px;">Failed to load audit log: ${e.message}</div>`;
+  }
 }
 
 export function initSettings() {

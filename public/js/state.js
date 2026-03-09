@@ -3,15 +3,20 @@
 class Store {
   constructor() {
     this.state = {
-      user: null,        // { npub, pubkey, role, profile }
-      overview: null,    // { divisions, totalIssues, openIssues, closedIssues }
+      user: null,
+      overview: null,
       activity: [],
       agents: [],
       epics: [],
+      sessions: null,       // { active, recent, summary }
       team: null,
       currentView: 'overview',
       connected: false,
-      lastUpdate: null
+      lastUpdate: null,
+      rosterFilter: 'all',
+      selectedGraphEpic: null,
+      feedDate: 'today',
+      historicalFeed: null
     };
     this.listeners = new Map();
   }

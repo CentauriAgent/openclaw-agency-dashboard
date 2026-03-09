@@ -1,5 +1,41 @@
-const profileCache = new Map(); // pubkey → { profile, fetchedAt }
+// Nostr profile fetcher with file-based cache (1-hour TTL)
+const fs = require('fs');
+const path = require('path');
+
+const CACHE_FILE = path.join(__dirname, '.profile-cache.json');
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+let profileCache = new Map();
+
+// Load cache from file on startup
+function loadCacheFromFile() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+      const now = Date.now();
+      for (const [key, entry] of Object.entries(data)) {
+        if (now - entry.fetchedAt < CACHE_TTL) {
+          profileCache.set(key, entry);
+        }
+      }
+      console.log(`📎 Loaded ${profileCache.size} cached profiles from disk`);
+    }
+  } catch (e) {
+    console.error('Profile cache load failed:', e.message);
+  }
+}
+
+// Save cache to file
+function saveCacheToFile() {
+  try {
+    const data = {};
+    for (const [key, entry] of profileCache) {
+      data[key] = entry;
+    }
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error('Profile cache save failed:', e.message);
+  }
+}
 
 async function getProfile(npub) {
   const { nip19 } = require('nostr-tools');
@@ -44,6 +80,7 @@ async function getProfile(npub) {
         lud16: content.lud16 || null
       };
       profileCache.set(pubkey, { profile, fetchedAt: Date.now() });
+      saveCacheToFile();
       return profile;
     }
   } catch (e) {
@@ -61,7 +98,38 @@ async function getProfile(npub) {
     lud16: null
   };
   profileCache.set(pubkey, { profile: fallback, fetchedAt: Date.now() });
+  saveCacheToFile();
   return fallback;
 }
 
-module.exports = { getProfile };
+/**
+ * Batch fetch profiles for multiple npubs
+ */
+async function batchFetchProfiles(npubs) {
+  const results = [];
+  for (const npub of npubs) {
+    try {
+      const profile = await getProfile(npub);
+      results.push(profile);
+    } catch (e) {
+      results.push({ npub, name: npub.slice(0, 12) + '...' });
+    }
+  }
+  return results;
+}
+
+/**
+ * Get cache stats
+ */
+function getProfileCacheStats() {
+  return {
+    size: profileCache.size,
+    cacheFile: CACHE_FILE,
+    exists: fs.existsSync(CACHE_FILE)
+  };
+}
+
+// Load cache on startup
+loadCacheFromFile();
+
+module.exports = { getProfile, batchFetchProfiles, getProfileCacheStats };

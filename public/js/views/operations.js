@@ -1,4 +1,4 @@
-// Active Operations view
+// Active Operations view — epics + live sessions
 
 import { store } from '../state.js';
 
@@ -12,15 +12,55 @@ const STATUS_ICONS = {
 
 export function renderOperations(container) {
   const epics = store.get('epics');
+  const sessionData = store.get('sessions');
+
+  let html = '<div class="view-header"><h2 class="view-title">Active Operations</h2></div>';
+
+  // Live Sessions Section
+  const activeSessions = sessionData?.active || [];
+  const recentSessions = sessionData?.recent || [];
+
+  if (activeSessions.length > 0 || recentSessions.length > 0) {
+    html += '<div class="sessions-panel">';
+    html += '<h3 style="font-size: 15px; font-weight: 600; margin-bottom: var(--space-md); display: flex; align-items: center; gap: var(--space-sm);">';
+    html += `<span class="status-indicator status-indicator--active" style="animation: pulse 2s infinite;"></span> Live Agent Sessions`;
+    if (activeSessions.length > 0) {
+      html += ` <span class="badge badge--active">${activeSessions.length} active</span>`;
+    }
+    html += '</h3>';
+
+    // Active sessions
+    for (const session of activeSessions) {
+      html += renderSessionCard(session, true);
+    }
+
+    // Recent sessions (collapsible)
+    if (recentSessions.length > 0) {
+      html += `<details style="margin-top: var(--space-sm);">
+        <summary style="cursor: pointer; font-size: 13px; color: var(--text-secondary); padding: var(--space-xs) 0;">
+          ${recentSessions.length} recent sessions
+        </summary>
+        <div style="margin-top: var(--space-sm);">
+          ${recentSessions.map(s => renderSessionCard(s, false)).join('')}
+        </div>
+      </details>`;
+    }
+
+    html += '</div>';
+  }
+
+  // Epics Section
   if (!epics || epics.length === 0) {
-    container.innerHTML = `
-      <div class="view-header"><h2 class="view-title">Active Operations</h2></div>
-      <div class="empty-state">
-        <div class="empty-state-icon">⚡</div>
-        <div class="empty-state-text">No epics found</div>
-        <div class="empty-state-sub">Operations will appear here when epics are created in beads</div>
-      </div>
-    `;
+    if (activeSessions.length === 0 && recentSessions.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚡</div>
+          <div class="empty-state-text">No active operations</div>
+          <div class="empty-state-sub">Spawn agents to see them here — operations appear when epics are created or sessions are running</div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
     return;
   }
 
@@ -30,14 +70,12 @@ export function renderOperations(container) {
     return (order[a.status] ?? 5) - (order[b.status] ?? 5);
   });
 
-  container.innerHTML = `
-    <div class="view-header"><h2 class="view-title">Active Operations</h2></div>
-    ${sorted.map(epic => renderEpic(epic)).join('')}
-  `;
+  html += sorted.map(epic => renderEpic(epic)).join('');
+  container.innerHTML = html;
 
   // Toggle task list visibility
   container.querySelectorAll('.epic-toggle').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       const taskList = btn.closest('.epic-card').querySelector('.task-list');
       if (taskList) {
         taskList.style.display = taskList.style.display === 'none' ? 'block' : 'none';
@@ -45,6 +83,34 @@ export function renderOperations(container) {
       }
     });
   });
+}
+
+function renderSessionCard(session, isActive) {
+  const typeClass = `session-type-badge--${session.type || 'subagent'}`;
+  const typeLabel = session.type === 'cron' ? '⏰ Cron' : session.type === 'main' ? '🏠 Main' : '🤖 Subagent';
+  const ageStr = formatAge(session.ageMinutes);
+
+  return `
+    <div class="session-card ${isActive ? 'session-card--active' : ''}">
+      <span class="session-type-badge ${typeClass}">${typeLabel}</span>
+      <div class="session-info">
+        <div class="session-label">${session.label || session.sessionId?.slice(0, 8)}</div>
+        <div class="session-task">${session.taskDescription || 'No description'}</div>
+      </div>
+      <div class="session-meta">
+        <div>${ageStr}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${session.model || ''}</div>
+      </div>
+    </div>
+  `;
+}
+
+function formatAge(minutes) {
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 function renderEpic(epic) {
@@ -102,6 +168,11 @@ function formatDate(dateStr) {
 export function initOperations() {
   const container = document.getElementById('view-operations');
   store.on('epics', () => {
+    if (store.get('currentView') === 'operations') {
+      renderOperations(container);
+    }
+  });
+  store.on('sessions', () => {
     if (store.get('currentView') === 'operations') {
       renderOperations(container);
     }

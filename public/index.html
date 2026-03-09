@@ -12,8 +12,11 @@
   <link rel="stylesheet" href="/css/cards.css">
   <link rel="stylesheet" href="/css/views.css">
   <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/graph.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/nostr-tools@2.10.4/lib/nostr.bundle.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dagre-d3@0.6.4/dist/dagre-d3.min.js"></script>
 </head>
 <body>
   <!-- Login Page -->
@@ -24,17 +27,14 @@
       <div class="login-card">
         <p class="login-desc">Sign in with your Nostr identity to access the agency dashboard.</p>
 
-        <!-- NIP-07: Extension -->
         <button id="btn-nip07" class="btn btn-primary btn-login">
           🔑 Login with Extension <span class="btn-sub">(NIP-07)</span>
         </button>
 
-        <!-- NIP-46: Nostr Connect -->
         <button id="btn-nip46" class="btn btn-secondary btn-login">
           📱 Login with Nostr Connect <span class="btn-sub">(NIP-46 · Amber, nsec.app)</span>
         </button>
 
-        <!-- NIP-46 expanded section (hidden by default) -->
         <div id="nip46-section" class="nip46-section" style="display:none">
           <div id="nip46-qr" class="nip46-qr"></div>
           <div class="nip46-uri-row">
@@ -45,12 +45,10 @@
           <button id="btn-nip46-cancel" class="btn btn-ghost btn-sm nip46-cancel">Cancel</button>
         </div>
 
-        <!-- nsec: Direct Key -->
         <button id="btn-nsec" class="btn btn-secondary btn-login">
           🔐 Login with nsec <span class="btn-sub">(direct key entry)</span>
         </button>
 
-        <!-- nsec expanded section (hidden by default) -->
         <div id="nsec-section" class="nsec-section" style="display:none">
           <div class="nsec-warning">
             ⚠️ Your key stays in your browser and is never sent to the server.
@@ -62,16 +60,12 @@
           </div>
         </div>
 
-
-
-
         <div id="login-error" class="login-error" style="display:none"></div>
         <div id="login-loading" class="login-loading" style="display:none">
           <div class="spinner"></div>
           <span id="login-loading-text">Signing in...</span>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -80,6 +74,9 @@
     <!-- Top Bar -->
     <header class="topbar">
       <div class="topbar-left">
+        <button id="hamburger-btn" class="hamburger-btn" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
         <span class="topbar-logo">⭐</span>
         <span class="topbar-title">OpenClaw Agency Dashboard</span>
         <span id="connection-status" class="connection-status connected">
@@ -87,6 +84,13 @@
           <span id="status-text">Live</span>
         </span>
         <span id="last-update" class="last-update"></span>
+      </div>
+      <div class="topbar-center">
+        <div class="search-bar" id="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" class="search-input" placeholder="Search agents, tasks, activity... (/)" autocomplete="off" />
+          <div id="search-results" class="search-results" style="display:none"></div>
+        </div>
       </div>
       <div class="topbar-right">
         <div id="user-profile" class="user-profile">
@@ -100,7 +104,7 @@
     <!-- Layout: Sidebar + Main -->
     <div class="dashboard-layout">
       <!-- Sidebar -->
-      <nav class="sidebar">
+      <nav class="sidebar" id="sidebar">
         <div class="sidebar-nav">
           <button class="nav-item active" data-view="overview">
             <span class="nav-icon">🏢</span>
@@ -110,6 +114,10 @@
             <span class="nav-icon">⚡</span>
             <span class="nav-label">Operations</span>
           </button>
+          <button class="nav-item" data-view="graph">
+            <span class="nav-icon">🔗</span>
+            <span class="nav-label">Graph</span>
+          </button>
           <button class="nav-item" data-view="feed">
             <span class="nav-icon">📜</span>
             <span class="nav-label">Activity</span>
@@ -117,6 +125,10 @@
           <button class="nav-item" data-view="roster">
             <span class="nav-icon">👥</span>
             <span class="nav-label">Roster</span>
+          </button>
+          <button class="nav-item" data-view="workflow">
+            <span class="nav-icon">🔄</span>
+            <span class="nav-label">Workflow</span>
           </button>
           <div class="nav-divider"></div>
           <button class="nav-item" data-view="settings" id="nav-settings" style="display:none">
@@ -137,17 +149,47 @@
             <span class="stat-value" id="stat-closed">—</span>
             <span class="stat-label">closed</span>
           </div>
+          <div class="stat-item" id="stat-sessions-row" style="display:none">
+            <span class="stat-value" id="stat-sessions">0</span>
+            <span class="stat-label">active agents</span>
+          </div>
         </div>
       </nav>
+
+      <!-- Sidebar Overlay (mobile) -->
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
       <!-- Main Content -->
       <main class="main-content">
         <div id="view-overview" class="view active"></div>
         <div id="view-operations" class="view"></div>
+        <div id="view-graph" class="view"></div>
         <div id="view-feed" class="view"></div>
         <div id="view-roster" class="view"></div>
+        <div id="view-workflow" class="view"></div>
         <div id="view-settings" class="view"></div>
       </main>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3>⌨️ Keyboard Shortcuts</h3>
+      <div class="shortcuts-grid">
+        <div class="shortcut"><kbd>1</kbd> Overview</div>
+        <div class="shortcut"><kbd>2</kbd> Operations</div>
+        <div class="shortcut"><kbd>3</kbd> Graph</div>
+        <div class="shortcut"><kbd>4</kbd> Activity</div>
+        <div class="shortcut"><kbd>5</kbd> Roster</div>
+        <div class="shortcut"><kbd>6</kbd> Workflow</div>
+        <div class="shortcut"><kbd>7</kbd> Settings</div>
+        <div class="shortcut"><kbd>/</kbd> Focus Search</div>
+        <div class="shortcut"><kbd>r</kbd> Refresh Data</div>
+        <div class="shortcut"><kbd>?</kbd> This Help</div>
+        <div class="shortcut"><kbd>Esc</kbd> Close / Clear</div>
+      </div>
+      <button class="btn btn-ghost btn-sm modal-close" id="close-shortcuts">Close</button>
     </div>
   </div>
 

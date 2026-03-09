@@ -197,6 +197,15 @@
   text-align: right;
 }
 
+.feed-item--memory {
+  border-left: 2px solid var(--accent-dim);
+  padding-left: var(--space-md);
+}
+
+.feed-symbol--heartbeat { color: #e74c3c; }
+.feed-symbol--agent { color: var(--accent-bright); }
+.feed-symbol--memory { color: var(--text-secondary); }
+
 /* === Roster View === */
 .roster-header {
   display: flex;

@@ -293,12 +293,116 @@ function getMockEpics() {
   });
 }
 
+function getMockGraph(epicId) {
+  const targetId = epicId || 'clawd-xyz';
+  const epic = MOCK_EPICS.find(e => e.id === targetId);
+  if (!epic) return { nodes: [], edges: [], epicId: null, epicTitle: null };
+
+  const tasks = MOCK_TASKS.filter(t => t.parent_id === targetId);
+  const nodes = tasks.map(t => ({
+    id: t.id,
+    label: t.title,
+    status: t.status,
+    shortId: t.id.split('.').pop(),
+    assignee: getAgentForRole(t.labels)
+  }));
+
+  // Create some mock dependencies for clawd-xyz
+  const edges = [];
+  if (targetId === 'clawd-xyz') {
+    edges.push(
+      { from: 'clawd-xyz.1', to: 'clawd-xyz.3' },  // README → Dashboard Spec
+      { from: 'clawd-xyz.2', to: 'clawd-xyz.6' },  // Taglines → Social Media
+      { from: 'clawd-xyz.3', to: 'clawd-xyz.4' },  // Spec → Build MVP
+      { from: 'clawd-xyz.4', to: 'clawd-xyz.9' },  // MVP → QA Review
+      { from: 'clawd-xyz.4', to: 'clawd-xyz.10' }, // MVP → Perf Benchmarks
+      { from: 'clawd-xyz.9', to: 'clawd-xyz.11' }, // QA → Deploy
+      { from: 'clawd-xyz.10', to: 'clawd-xyz.11' },// Perf → Deploy
+      { from: 'clawd-xyz.11', to: 'clawd-xyz.12' },// Deploy → Launch
+      { from: 'clawd-xyz.6', to: 'clawd-xyz.12' }, // Social → Launch
+      { from: 'clawd-xyz.7', to: 'clawd-xyz.12' }, // Community → Launch
+      { from: 'clawd-xyz.8', to: 'clawd-xyz.12' }  // Press Kit → Launch
+    );
+  } else if (targetId === 'clawd-k4o') {
+    edges.push(
+      { from: 'clawd-k4o.1', to: 'clawd-k4o.4' },
+      { from: 'clawd-k4o.2', to: 'clawd-k4o.5' },
+      { from: 'clawd-k4o.1', to: 'clawd-k4o.9' },
+      { from: 'clawd-k4o.3', to: 'clawd-k4o.8' },
+      { from: 'clawd-k4o.4', to: 'clawd-k4o.10' },
+      { from: 'clawd-k4o.5', to: 'clawd-k4o.10' },
+      { from: 'clawd-k4o.6', to: 'clawd-k4o.10' },
+      { from: 'clawd-k4o.10', to: 'clawd-k4o.11' },
+      { from: 'clawd-k4o.11', to: 'clawd-k4o.13' },
+      { from: 'clawd-k4o.12', to: 'clawd-k4o.14' },
+      { from: 'clawd-k4o.13', to: 'clawd-k4o.14' }
+    );
+  }
+
+  return {
+    nodes,
+    edges,
+    epicId: epic.id,
+    epicTitle: epic.title,
+    epicStatus: epic.status
+  };
+}
+
+function getMockSessions() {
+  const now = Date.now();
+  return {
+    active: [
+      {
+        sessionId: 'mock-sub-001',
+        key: 'agent:main:subagent:mock-001',
+        type: 'subagent',
+        label: 'dashboard-phase2',
+        taskDescription: 'Building Phase 2 of Agency Dashboard',
+        channel: 'signal',
+        model: 'claude-opus-4-6',
+        updatedAt: new Date(now - 60000).toISOString(),
+        ageMinutes: 1,
+        isActive: true
+      },
+      {
+        sessionId: 'mock-sub-002',
+        key: 'agent:main:subagent:mock-002',
+        type: 'subagent',
+        label: 'content-writer',
+        taskDescription: 'Writing launch blog post',
+        channel: 'signal',
+        model: 'claude-opus-4-6',
+        updatedAt: new Date(now - 120000).toISOString(),
+        ageMinutes: 2,
+        isActive: true
+      }
+    ],
+    recent: [
+      {
+        sessionId: 'mock-cron-001',
+        key: 'agent:main:cron:mock-cron-001',
+        type: 'cron',
+        label: 'Heartbeat Check',
+        taskDescription: 'Periodic heartbeat — email, calendar, social',
+        channel: 'system',
+        model: 'claude-sonnet-4-6',
+        updatedAt: new Date(now - 1800000).toISOString(),
+        ageMinutes: 30,
+        isActive: false
+      }
+    ],
+    summary: { totalActive: 2, totalRecent: 1, totalToday: 15 }
+  };
+}
+
 module.exports = {
   getMockOverview,
   getMockActivity: generateMockActivity,
   getMockIssues: () => MOCK_ISSUES,
   getMockEpics,
   getMockAgentStatuses,
+  getMockGraph,
+  getMockSessions,
   MOCK_ISSUES,
   MOCK_TASKS,
   MOCK_EPICS
