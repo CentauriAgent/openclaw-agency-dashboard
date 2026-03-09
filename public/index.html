@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw Agency Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/views.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page" class="login-page">
+    <div class="login-container">
+      <div class="login-logo">⭐</div>
+      <h1 class="login-title">OpenClaw Agency</h1>
+      <div class="login-card">
+        <p class="login-desc">Sign in with your Nostr identity to access the agency dashboard.</p>
+        <button id="btn-nip07" class="btn btn-primary btn-login">
+          🔑 Login with Extension <span class="btn-sub">(NIP-07)</span>
+        </button>
+        <button id="btn-nip46" class="btn btn-secondary btn-login" disabled>
+          📱 Remote Signer <span class="btn-sub">(NIP-46 — coming soon)</span>
+        </button>
+        <div class="login-divider"><span>or</span></div>
+        <p class="login-help">Don't have a Nostr identity? <a href="https://nostr.com" target="_blank">Get one at nostr.com →</a></p>
+        <div id="login-error" class="login-error" style="display:none"></div>
+        <div id="login-loading" class="login-loading" style="display:none">
+          <div class="spinner"></div>
+          <span>Signing in...</span>
+        </div>
+      </div>
+      <p class="login-footer">Powered by Nostr · NIP-07</p>
+    </div>
+  </div>
+
+  <!-- Dashboard (hidden until auth) -->
+  <div id="dashboard" class="dashboard" style="display:none">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo">⭐</span>
+        <span class="topbar-title">OpenClaw Agency Dashboard</span>
+        <span id="connection-status" class="connection-status connected">
+          <span class="status-dot"></span>
+          <span id="status-text">Live</span>
+        </span>
+        <span id="last-update" class="last-update"></span>
+      </div>
+      <div class="topbar-right">
+        <div id="user-profile" class="user-profile">
+          <img id="user-avatar" class="user-avatar" src="" alt="">
+          <span id="user-name" class="user-name"></span>
+          <button id="btn-logout" class="btn btn-ghost btn-sm">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Layout: Sidebar + Main -->
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-nav">
+          <button class="nav-item active" data-view="overview">
+            <span class="nav-icon">🏢</span>
+            <span class="nav-label">Overview</span>
+          </button>
+          <button class="nav-item" data-view="operations">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">Operations</span>
+          </button>
+          <button class="nav-item" data-view="feed">
+            <span class="nav-icon">📜</span>
+            <span class="nav-label">Activity</span>
+          </button>
+          <button class="nav-item" data-view="roster">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Roster</span>
+          </button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" data-view="settings" id="nav-settings" style="display:none">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+          </button>
+        </div>
+        <div class="sidebar-stats" id="sidebar-stats">
+          <div class="stat-item">
+            <span class="stat-value" id="stat-total">—</span>
+            <span class="stat-label">total</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-open">—</span>
+            <span class="stat-label">open</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-closed">—</span>
+            <span class="stat-label">closed</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div id="view-overview" class="view active"></div>
+        <div id="view-operations" class="view"></div>
+        <div id="view-feed" class="view"></div>
+        <div id="view-roster" class="view"></div>
+        <div id="view-settings" class="view"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+{
+  "divisions": [
+    {
+      "id": "engineering",
+      "name": "Engineering",
+      "emoji": "🏗️",
+      "color": "#3b82f6",
+      "agents": [
+        { "id": "architect", "name": "Architect", "emoji": "📐", "desc": "System design, API contracts, component structure" },
+        { "id": "coder", "name": "Coder", "emoji": "💻", "desc": "Implementation, features, bug fixes" },
+        { "id": "tester", "name": "Tester", "emoji": "🧪", "desc": "Unit tests, integration tests, TDD" },
+        { "id": "reviewer", "name": "Reviewer", "emoji": "🔍", "desc": "Code review, best practices" },
+        { "id": "docs", "name": "Docs", "emoji": "📝", "desc": "Documentation, README, API docs" },
+        { "id": "security", "name": "Security", "emoji": "🔒", "desc": "Vulnerability analysis, OWASP" },
+        { "id": "frontend", "name": "Frontend", "emoji": "🎨", "desc": "UI components, accessibility" },
+        { "id": "backend", "name": "Backend", "emoji": "⚙️", "desc": "API endpoints, database, server" },
+        { "id": "devops", "name": "DevOps", "emoji": "🚀", "desc": "CI/CD, Docker, deployment" }
+      ]
+    },
+    {
+      "id": "design",
+      "name": "Design",
+      "emoji": "🎨",
+      "color": "#ec4899",
+      "agents": [
+        { "id": "ui-designer", "name": "UI Designer", "emoji": "🖌️", "desc": "Visual design, design systems" },
+        { "id": "ux-researcher", "name": "UX Researcher", "emoji": "🔬", "desc": "User testing, personas" },
+        { "id": "brand-guardian", "name": "Brand Guardian", "emoji": "🛡️", "desc": "Brand identity, consistency" }
+      ]
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing",
+      "emoji": "📣",
+      "color": "#22c55e",
+      "agents": [
+        { "id": "growth-hacker", "name": "Growth Hacker", "emoji": "📈", "desc": "User acquisition, viral loops" },
+        { "id": "content-creator", "name": "Content Creator", "emoji": "✍️", "desc": "Multi-platform content, SEO" },
+        { "id": "social-strategist", "name": "Social Strategist", "emoji": "📱", "desc": "Social campaigns, engagement" },
+        { "id": "community-builder", "name": "Community Builder", "emoji": "🤝", "desc": "Forum/Discord growth" }
+      ]
+    },
+    {
+      "id": "product",
+      "name": "Product",
+      "emoji": "📦",
+      "color": "#f59e0b",
+      "agents": [
+        { "id": "sprint-prioritizer", "name": "Sprint Prioritizer", "emoji": "🎯", "desc": "RICE/MoSCoW, backlog management" },
+        { "id": "trend-researcher", "name": "Trend Researcher", "emoji": "🔭", "desc": "Market intelligence, competitive analysis" },
+        { "id": "feedback-synthesizer", "name": "Feedback Synthesizer", "emoji": "💬", "desc": "User feedback analysis" }
+      ]
+    },
+    {
+      "id": "project-management",
+      "name": "Project Management",
+      "emoji": "🎬",
+      "color": "#6366f1",
+      "agents": [
+        { "id": "studio-producer", "name": "Studio Producer", "emoji": "🎬", "desc": "Portfolio management, alignment" },
+        { "id": "project-shepherd", "name": "Project Shepherd", "emoji": "🐑", "desc": "Cross-functional coordination" },
+        { "id": "experiment-tracker", "name": "Experiment Tracker", "emoji": "📊", "desc": "A/B tests, hypothesis validation" }
+      ]
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "emoji": "🧪",
+      "color": "#ef4444",
+      "agents": [
+        { "id": "reality-checker", "name": "Reality Checker", "emoji": "🚫", "desc": "Evidence-based QA" },
+        { "id": "performance-benchmarker", "name": "Performance Benchmarker", "emoji": "⚡", "desc": "Load testing, Core Web Vitals" },
+        { "id": "api-tester", "name": "API Tester", "emoji": "🔌", "desc": "Endpoint verification, contracts" },
+        { "id": "accessibility-auditor", "name": "Accessibility Auditor", "emoji": "♿", "desc": "WCAG compliance" }
+      ]
+    },
+    {
+      "id": "operations",
+      "name": "Operations & Support",
+      "emoji": "🛟",
+      "color": "#14b8a6",
+      "agents": [
+        { "id": "support-responder", "name": "Support Responder", "emoji": "💬", "desc": "Customer service, knowledge base" },
+        { "id": "analytics-reporter", "name": "Analytics Reporter", "emoji": "📊", "desc": "Dashboards, KPI tracking" },
+        { "id": "infrastructure-maintainer", "name": "Infrastructure Maintainer", "emoji": "🏗️", "desc": "Reliability, monitoring" },
+        { "id": "compliance-checker", "name": "Compliance Checker", "emoji": "⚖️", "desc": "Legal, regulatory, risk" }
+      ]
+    }
+  ]
+}

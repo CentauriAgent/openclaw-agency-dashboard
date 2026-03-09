@@ -1,0 +1,19 @@
+{
+  "name": "openclaw-agency-dashboard",
+  "version": "1.0.0",
+  "description": "OpenClaw Agency Dashboard — Nostr-authenticated, real-time AI agent monitoring",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "bash scripts/setup.sh"
+  },
+  "dependencies": {
+    "nostr-tools": "^2.10.0",
+    "jsonwebtoken": "^9.0.0",
+    "cookie": "^1.0.0",
+    "ws": "^8.16.0"
+  },
+  "keywords": ["nostr", "dashboard", "ai-agents", "openclaw"],
+  "author": "CentauriAgent",
+  "license": "MIT"
+}

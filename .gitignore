@@ -1,0 +1,5 @@
+node_modules/
+agency-team.json
+.session-secret
+*.log
+.DS_Store
