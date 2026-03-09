@@ -261,8 +261,11 @@ function subscribeNip46(sessionId, session, nonce) {
 
         // Decrypt the NIP-46 message (NIP-04 encrypted)
         const { decrypt } = require('nostr-tools/nip04');
-        const content = await decrypt(session.tempSecretKey, event.pubkey, event.content);
-        const nip46msg = JSON.parse(content);
+        const skUint8 = Uint8Array.from(Buffer.from(session.tempSecretKey, 'hex'));
+        const content = decrypt(skUint8, event.pubkey, event.content);
+        // Handle both sync (string) and async (promise) return
+        const decrypted = typeof content === 'string' ? content : await content;
+        const nip46msg = JSON.parse(decrypted);
 
         if (nip46msg.method === 'connect') {
           // Remote signer is connecting — send sign_event request
@@ -292,9 +295,9 @@ function subscribeNip46(sessionId, session, nonce) {
             params: [JSON.stringify(challengeEvent)]
           });
 
-          const encrypted = await encrypt(session.tempSecretKey, event.pubkey, requestMsg);
-
           const skUint8 = Uint8Array.from(Buffer.from(session.tempSecretKey, 'hex'));
+          const encResult = encrypt(skUint8, event.pubkey, requestMsg);
+          const encrypted = typeof encResult === 'string' ? encResult : await encResult;
           const responseEvent = finalizeEvent({
             kind: 24133,
             created_at: Math.floor(Date.now() / 1000),
