@@ -328,6 +328,8 @@ function subscribeNip46(sessionId, session, nonce) {
         }
       } catch (e) {
         console.error('NIP-46 message error:', e.message);
+        console.error('NIP-46 raw data:', data.toString().substring(0, 200));
+        console.error('NIP-46 stack:', e.stack?.split('\n').slice(0, 3).join(' | '));
       }
     });
 

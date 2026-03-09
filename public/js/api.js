@@ -37,10 +37,11 @@ class API {
   }
 
   post(path, body) {
-    return this.request(path, {
-      method: 'POST',
-      body: JSON.stringify(body)
-    });
+    const opts = { method: 'POST' };
+    if (body !== undefined) {
+      opts.body = JSON.stringify(body);
+    }
+    return this.request(path, opts);
   }
 
   patch(path, body) {

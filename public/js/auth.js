@@ -117,7 +117,12 @@ export function getStoredNsec() {
 
 export async function loginWithNostrConnect(onStatusUpdate) {
   // 1. Init session on server
-  const initResult = await api.post('/api/auth/nostr-connect/init');
+  let initResult;
+  try {
+    initResult = await api.post('/api/auth/nostr-connect/init');
+  } catch (e) {
+    throw new Error(`NIP-46 init failed: ${e.message} (check network/CORS)`);
+  }
   const { sessionId, connectUri, expiresIn } = initResult;
 
   if (onStatusUpdate) {
