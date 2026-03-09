@@ -288,11 +288,35 @@ export function initLoginPage() {
   document.getElementById('btn-copy-uri')?.addEventListener('click', () => {
     const uri = nip46UriInput?.value;
     if (uri) {
-      navigator.clipboard.writeText(uri).then(() => {
-        const btn = document.getElementById('btn-copy-uri');
-        btn.textContent = '✓ Copied';
-        setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
-      });
+      // Fallback for non-HTTPS contexts (Tailscale, etc.)
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(uri).then(() => {
+          const btn = document.getElementById('btn-copy-uri');
+          btn.textContent = '✓ Copied';
+          setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+        });
+      } else {
+        // Fallback: create a temporary textarea and use execCommand
+        const ta = document.createElement('textarea');
+        ta.value = uri;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          const btn = document.getElementById('btn-copy-uri');
+          btn.textContent = '✓ Copied';
+          setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+        } catch (e) {
+          // Last resort: select the input so user can manually copy
+          nip46UriInput?.select();
+          const btn = document.getElementById('btn-copy-uri');
+          btn.textContent = '⚠️ Select & copy manually';
+          setTimeout(() => { btn.textContent = '📋 Copy'; }, 3000);
+        }
+        document.body.removeChild(ta);
+      }
     }
   });
 
